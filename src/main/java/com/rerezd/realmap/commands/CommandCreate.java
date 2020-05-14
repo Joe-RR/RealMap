@@ -26,16 +26,29 @@ public class CommandCreate {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, boolean b) {
 
-        LiteralArgumentBuilder<ServerCommandSource> literal = CommandManager.literal("createmap").requires(source -> source.hasPermissionLevel(2)).then(
+        LiteralArgumentBuilder<ServerCommandSource> literal = CommandManager.literal("createmap").then(
                 CommandManager.argument("URL_OR_File",StringArgumentType.greedyString())
                         .executes(context -> execute(context, StringArgumentType.getString(context, "URL_OR_File"))));
+
 
         dispatcher.register(literal);
     }
 
     public static int execute(CommandContext<ServerCommandSource> context, String msg) throws CommandSyntaxException {
         ServerPlayerEntity src = context.getSource().getPlayer();
-        MutableText errormsg = new LiteralText("That is not a valid file or url");
+        ItemStack diamond = new ItemStack(Items.DIAMOND);
+        int slot = context.getSource().getPlayer().inventory.selectedSlot;
+        if(context.getSource().getPlayer().inventory.getStack(slot).getItem() != Items.DIAMOND && context.getSource().getPlayer().inventory.getStack(slot).getCount() != 2){
+            MutableText dmsg = new LiteralText("2 Diamonds must be in your main hand!");
+            src.sendMessage(dmsg.formatted(Formatting.RED), MessageType.CHAT);
+        }else if(context.getSource().getPlayer().inventory.getStack(slot).getItem() == Items.DIAMOND && context.getSource().getPlayer().inventory.getStack(slot).getCount() == 2) {
+            MutableText dmsg = new LiteralText("You have purchased a map for 2 diamonds!");
+            context.getSource().getPlayer().inventory.removeStack(slot);
+            src.sendMessage(dmsg.formatted(Formatting.AQUA), MessageType.CHAT);
+
+
+            MutableText errormsg = new LiteralText("That is not a valid file or url");
+
             if (context.getSource() != null) {
                 String URLorFileName = msg;
 
@@ -68,6 +81,7 @@ public class CommandCreate {
                     }
                 }
             }
+        }
         return 1;
     }
 
